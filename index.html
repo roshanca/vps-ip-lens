@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f8">
+  <meta name="description" content="查询 IPv4 / IPv6 网络归属与大致位置，查看诚实标注的 IP 声誉状态，并从 VPS 自己测试 AI 域名的 TLS 连通性。">
+  <title>IP 透镜 · VPS 网络信号检查</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="IP 透镜首页">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-name">IP 透镜</span>
+        <span class="brand-divider"></span>
+        <span class="brand-sub">VPS 网络诊断</span>
+      </a>
+      <div class="top-pills">
+        <span class="pill pill-outline"><span class="pill-dot"></span>不打“纯净分”</span>
+        <span class="pill pill-muted">GitHub Pages · 静态托管</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> NETWORK IDENTITY · REACHABILITY</p>
+          <h1 id="page-title">先看清 IP 的<br><span>网络信号。</span></h1>
+          <p class="hero-lede">查网络归属和粗略地理位置；把无法确认的风险留在“未知”。AI 服务能否从你的 VPS 连通，则要在 VPS 本机测试。</p>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="visual-label label-a">LOOKUP <b>01</b></div>
+          <div class="visual-label label-b">ROUTE <b>02</b></div>
+          <div class="visual-ring ring-one"></div>
+          <div class="visual-ring ring-two"></div>
+          <div class="visual-center"><span class="visual-cross">+</span><strong>IP</strong><small>NO SCORE</small></div>
+          <span class="visual-node node-one"></span><span class="visual-node node-two"></span><span class="visual-node node-three"></span>
+          <div class="visual-grid"></div>
+        </div>
+      </section>
+
+      <section class="lookup-panel" aria-labelledby="lookup-title">
+        <div class="panel-heading">
+          <div class="panel-step">01</div>
+          <div>
+            <p class="eyebrow">IP LOOKUP</p>
+            <h2 id="lookup-title">查询一个 IPv4 或 IPv6</h2>
+          </div>
+        </div>
+        <form id="lookup-form" novalidate>
+          <label class="field-label" for="ip-input">公网 IP 地址</label>
+          <div class="input-row">
+            <div class="input-wrap">
+              <span class="input-glyph" aria-hidden="true">⌁</span>
+              <input id="ip-input" name="ip" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="45" placeholder="例如 1.1.1.1 或 2606:4700:4700::1111" aria-describedby="input-help privacy-disclosure" required>
+              <span class="input-type">IPv4 / IPv6</span>
+            </div>
+            <button id="lookup-button" class="primary-button" type="submit"><span>查询网络信息</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+          </div>
+          <p id="input-help" class="field-help">仅接受 IP 地址本身；不接受域名、端口或网段。内网和保留地址可能没有有意义的 GeoIP 结果。</p>
+          <div id="privacy-disclosure" class="privacy-disclosure">
+            <span class="privacy-icon" aria-hidden="true">i</span>
+            <p>勾选同意并查询后，浏览器会直接将输入的 IP 发送给 <strong>ipwho.is</strong>，查询地址中会包含该 IP；服务也会看到发起连接的访客公网 IP。<a href="https://ipwhois.io/privacy" target="_blank" rel="noopener noreferrer">ipwhois.io 隐私政策</a>称使用数据可能保存在日志中，并可按处理目的保留；政策没有说明查询日志的具体删除期限。本页没有后端，也不保存查询历史。</p>
+          </div>
+          <label class="consent-control" for="query-consent">
+            <input id="query-consent" name="query-consent" type="checkbox" value="yes">
+            <span class="consent-copy"><strong>我已阅读并同意将本次输入的 IP 发送给 ipwho.is 查询。</strong><small>每次查询都需重新勾选；未勾选时不会发送。请只查询你有权查询的 IP。</small></span>
+          </label>
+          <p id="form-message" class="form-message" role="status" aria-live="polite" hidden></p>
+        </form>
+      </section>
+
+      <section id="results" class="results-section" aria-live="polite" hidden>
+        <div class="section-heading">
+          <div><p class="eyebrow">OBSERVED NETWORK DATA</p><h2>查询结果</h2></div>
+          <span id="checked-at" class="updated-label"></span>
+        </div>
+        <article class="result-card">
+          <div class="result-topline">
+            <div class="result-address"><span class="result-dot"></span><span id="result-ip">—</span></div>
+            <button id="copy-ip" class="subtle-button" type="button">复制 IP</button>
+          </div>
+          <div class="facts-grid">
+            <div class="fact fact-location">
+              <span class="fact-label">大致位置</span>
+              <strong id="result-location">—</strong>
+              <small>GeoIP 估算，不是设备定位</small>
+            </div>
+            <div class="fact">
+              <span class="fact-label">国家 / 地区</span>
+              <strong id="result-country">—</strong>
+              <small id="result-ip-type">—</small>
+            </div>
+            <div class="fact">
+              <span class="fact-label">自治系统编号</span>
+              <strong id="result-asn">—</strong>
+              <small>ASN</small>
+            </div>
+            <div class="fact">
+              <span class="fact-label">网络组织</span>
+              <strong id="result-org">—</strong>
+              <small>数据源字段 org；不等同于零售 ISP</small>
+            </div>
+          </div>
+          <div class="result-footnote"><span class="tiny-info">i</span><span>来源：<a href="https://ipwhois.io/documentation" target="_blank" rel="noopener noreferrer">ipwho.is API</a>。城市位置可能落在机房、交换点或注册地址；本页只展示 ASN 与网络组织，不据此推断实际零售 ISP。</span></div>
+        </article>
+
+        <div class="section-heading section-heading-spaced">
+          <div><p class="eyebrow">REPUTATION SIGNALS</p><h2>代理与滥用信誉</h2></div>
+          <span class="status-unknown">状态：未知</span>
+        </div>
+        <article class="reputation-card">
+          <div class="unknown-mark" aria-hidden="true">?</div>
+          <div class="reputation-copy">
+            <h3>本页没有足够可信的自动判定数据</h3>
+            <p>VPN / Proxy / Tor 与滥用黑名单均未自动查询。没有可用结果不代表“干净”，因此不提供综合分数或通过认证。</p>
+          </div>
+          <div class="manual-checks">
+            <div class="manual-title">如需复核，手动选择第三方检查：</div>
+            <a id="abuse-link" class="manual-link" href="https://www.abuseipdb.com/" target="_blank" rel="noopener noreferrer">AbuseIPDB 检查 <span aria-hidden="true">↗</span></a>
+            <a class="manual-link" href="https://check.spamhaus.org/" target="_blank" rel="noopener noreferrer">Spamhaus 官方检查页 <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="manual-disclosure">这些外部网站由你自行决定是否使用。AbuseIPDB 链接会在网址中带入当前 IP；Spamhaus 页面需你自行粘贴并提交。提交后，相应服务会收到该 IP 并按其政策处理。</p>
+          <p class="reputation-source-note">Spamhaus 的公共 DNSBL 对大型共享托管来源有公平使用限制，所以本页不自动发起 DNSBL 查询。<a href="https://www.spamhaus.org/blocklists/dnsbl-fair-use-policy/" target="_blank" rel="noopener noreferrer">查看其政策</a></p>
+        </article>
+      </section>
+
+      <section class="vps-section" aria-labelledby="vps-title">
+        <div class="vps-copy">
+          <div class="panel-heading panel-heading-small">
+            <div class="panel-step panel-step-dark">02</div>
+            <div><p class="eyebrow">RUN FROM YOUR VPS</p><h2 id="vps-title">AI 域名连通性，要从 VPS 本机测</h2></div>
+          </div>
+          <p class="vps-intro">网站所在服务器的网络出口不能代表你的 VPS。下面的短脚本在你的 VPS 上检查固定 AI 网页/API 域名的 DNS、TCP 443 和 TLS 握手；不发送账号、密钥或模型请求。</p>
+          <ol class="steps-list">
+            <li><span>1</span>下载脚本或复制代码到 VPS</li>
+            <li><span>2</span>在 VPS 终端运行 <code>python3 vps_ai_probe.py</code></li>
+            <li><span>3</span>查看每个固定主机的 DNS / TLS 是否成功</li>
+          </ol>
+          <div class="scope-note"><span aria-hidden="true">i</span><p>握手成功只表示当时的网络路径可建立 TLS，不代表网页登录、API 鉴权、地区支持、账号可用或服务策略允许。脚本不访问任意主机，也不做绕过限制的操作。</p></div>
+        </div>
+        <div class="script-card">
+          <div class="script-card-head"><span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Python 3 · 标准库</span><span class="no-key">NO API KEY</span></div>
+          <div class="target-list" aria-label="固定测试目标">
+            <span>chatgpt.com</span><span>claude.ai</span><span>gemini.google.com</span><span>api.openai.com</span><span>api.anthropic.com</span><span>generativelanguage.googleapis.com</span>
+          </div>
+          <div class="script-actions">
+            <a class="download-button" href="./vps_ai_probe.py" download>下载诊断脚本 <span aria-hidden="true">↓</span></a>
+            <button id="copy-script" class="copy-button" type="button">复制代码</button>
+          </div>
+          <details id="script-details" class="script-details">
+            <summary>展开查看完整脚本</summary>
+            <pre id="script-code"><code>正在加载脚本…</code></pre>
+          </details>
+          <p id="script-message" class="script-message" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="limitations" aria-labelledby="limits-title">
+        <div class="limitations-head"><p class="eyebrow">READ THE SIGNALS</p><h2 id="limits-title">结果边界，先说清楚</h2></div>
+        <div class="limit-grid">
+          <article><span class="limit-number">A</span><h3>没有单一“纯净度”</h3><p>声誉库的覆盖范围、更新时间和判定标准各不相同。某个来源没有记录，不能证明 IP 无风险。</p></article>
+          <article><span class="limit-number">B</span><h3>地理位置只是估算</h3><p>GeoIP 可能过时或把机房定位到城市级别的错误位置；ASN 组织名也不总是实际服务商。</p></article>
+          <article><span class="limit-number">C</span><h3>外部查询可能限流</h3><p>ipwho.is 免费接口文档列明每个来源域名每日最多 1,000 次；CORS 查询由本域名访客共用额度，且无 SLA。超限或异常时，本页会提示未取得数据。</p></article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-brand"><span class="brand-mark brand-mark-small" aria-hidden="true"><i></i><i></i><i></i></span><strong>IP 透镜</strong><span>轻量网络信号工具</span></div>
+      <div class="footer-meta"><span>不设账户 · 本页不保存查询历史 · 查询交由第三方处理</span><span>公开网站 · 任何人均可访问</span></div>
+      <div class="source-links"><a href="https://ipwhois.io/documentation" target="_blank" rel="noopener noreferrer">IP 数据文档</a><a href="https://ipwhois.io/privacy" target="_blank" rel="noopener noreferrer">IP 数据隐私政策</a></div>
+    </footer>
+  </div>
+</body>
+</html>
